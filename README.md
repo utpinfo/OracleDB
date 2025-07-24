@@ -10,7 +10,9 @@ ks=http://192.168.201.27/ksfiles/ks.cfg ip=192.168.70.121::192.168.70.254:255.25
 # For Oracle Linux 7
 # ks=http://192.168.201.27/ksfiles/ks.cfg ip=192.168.70.121::192.168.70.254:255.255.255.0::ens192:none
 # For Oracle Linux 6 (internat)
-# ks=https://raw.githubusercontent.com/utpinfo/OracleDB/refs/heads/main/ks.cfg ip=192.168.70.121::192.168.70.254:255.255.255.0::eth0:none nameserver=114.114.114.114,8.8.8.8
+# ks=https://raw.githubusercontent.com/utpinfo/OracleDB/main/ksfiles/ks.cfg ip=192.168.70.121::192.168.70.254:255.255.255.0::eth0:none nameserver=114.114.114.114,8.8.8.8
+# For Oracle Linux 7
+# ks=https://raw.githubusercontent.com/utpinfo/OracleDB/main/ksfiles/ol7ks.cfg ip=192.168.70.121::192.168.70.254:255.255.255.0::eth0:none nameserver=114.114.114.114,8.8.8.8
 ```
 
 
