@@ -14,8 +14,8 @@ ks=http://192.168.201.27/ksfiles/ks.cfg ip=192.168.70.121::192.168.70.254:255.25
 # For Oracle Linux 7
 # ks=https://raw.githubusercontent.com/utpinfo/OracleDB/main/ksfiles/ol7ks.cfg ip=192.168.70.121::192.168.70.254:255.255.255.0::eth0:none nameserver=114.114.114.114,8.8.8.8
 ```
-
-
+## 安裝ORACLE Database
+- 請閱讀DBSETUP.md
 
 ## 版本推薦
 | Oracle Database 版本 | 適用 OS 版本               | 備註                  |
