@@ -168,7 +168,7 @@ echo -e "\n\n****** start db instance create ******\n\n"
 su - oracle -c "
 export LC_ALL=\"C\";
 cd ~/source/database;
-./runInstaller -silent -waitForCompletion -noconfig -showProgress -ignorePrereq -responseFile ${assetsdir}/db.rsp
+./runInstaller -silent -waitForCompletion -noconfig -showProgress -ignorePrereq -responseFile ${assetsdir}/db_install.rsp
 "
 sh /opt/oraInventory/orainstRoot.sh
 sh /opt/oracle/ora11gR2/root.sh
