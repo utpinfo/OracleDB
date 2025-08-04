@@ -1,23 +1,47 @@
+#!/bin/bash
+# ============================================================================
+# Title:       One-Click Oracle Database Installation Script
+# Description: Automates the installation and configuration of Oracle Database
+# Author:      UTPInfo
+# Created:     2025-08-01
+# Version:     1.0
+#
+# Parameters:  Ensure the following three parameters are consistent:
+#              - /etc/profile: ORACLE_SID=MIS
+#              - /etc/oratab
+#              - $ORACLE_HOME/dbs
+#
+# Startup Test: Run the following commands to verify:
+#              - dbstart $ORACLE_HOME
+#              - /etc/init.d/dbora start
+# ============================================================================
+
+# 指定hostname
+ihostname=gsdb9.gs.com.cn
 # 配置AP Server FTP賬號密碼
-cat << 'EOF' >> /root/.192_168_70_22_cifs
+apserver=192.168.70.22
+apserver_cifs=.$(echo "$apserver" | sed 's/\./_/g')_cifs
+rm -rf "/root/${apserver_cifs}"
+cat << 'EOF' >> /root/${apserver_cifs}
 username=administrator
 password=ginkogsas
 EOF
 # 配置開機自動mount
-cat << 'EOF' >> /etc/fstab
-//192.168.70.22/excel_tmp_dir /backup/excel_tmp cifs credentials=/root/.192_168_70_22_cifs,uid=oracle,gid=oinstall,rw 0 0
-//192.168.70.22/mis_file$ /misfile cifs credentials=/root/.192_168_70_22_cifs,uid=oracle,gid=oinstall,rw 0 0
+cat <<EOF>> /etc/fstab
+//${apserver}/excel_tmp_dir /backup/excel_tmp cifs credentials=/root/${apserver_cifs},uid=oracle,gid=oinstall,rw 0 0
+//${apserver}/mis_file$ /misfile cifs credentials=/root/${apserver_cifs},uid=oracle,gid=oinstall,rw 0 0
 EOF
 
 # 關閉防火墻
 service iptables save
 service iptables stop
 chkconfig iptables off
-#關閉SELINUX
+
+# 關閉SELINUX
+sed -i "s/SELINUX=enforcing/SELINUX=disabled/" /etc/selinux/config
 setenforce 0
-cat << 'EOF' >> /etc/sysconfig/selinux
-SELINUX=enforcing --> SELINUX=disabled
-EOF
+
+: <<'COMMENT'
 # 配置本地yum 源(記得重新連接CD/DVD)
 mount /dev/cdrom /mnt
 mkdir -p /source/oracleLinux6
@@ -32,12 +56,12 @@ baseurl=file:///source/oracleLinux6/Server
 enabled=1
 gpgcheck=0
 EOF
-# 下載遠程yum 源
+COMMENT
+
+# 下載遠程yum源 (local.repo包不存oracle-rdbms-server-11gR2-preinstall)
 sudo wget http://public-yum.oracle.com/public-yum-ol6.repo
-
 # 檢查源
-#yum repolist all
-
+# yum repolist all
 # 清除原有的yum信息
 yum clean all
 
@@ -45,30 +69,22 @@ yum clean all
 # ****  若使用此包可跳至153行[修改密碼], 並繼續以下操作
 yum install oracle-rdbms-server-11gR2-preinstall -y
 
-# 修改内核参数配置kernel.shmall,kernel.shmmax
-memTotal=$(grep MemTotal /proc/meminfo | awk '{print $2}')
-totalMemory=$((memTotal / 2048))
-	shmall=$((memTotal / 4))
-if [ $shmall -lt 2097152 ]; then
-	shmall=2097152
-fi
-shmmax=$((memTotal * 1024 - 1))
-if [ "$shmmax" -lt 4294967295 ]; then
-	shmmax=4294967295
-fi
-sed -i "s/^kernel.shmall.*/kernel.shmall = $shmall/" /etc/sysctl.conf
-sed -i "s/^kernel.shmmax.*/kernel.shmmax = $shmmax/" /etc/sysctl.conf
 
-# 加载并应用系统内核参数配置
-/sbin/sysctl -p
+# 新增用戶組
+groupadd -g 54321 oinstall
+groupadd -g 54322 dba
+groupadd -g 54323 oper
+groupadd -g 54324 asmadmin
+groupadd -g 54326 asmdba
+groupadd -g 54325 asmoper
+# 新增用戶
+# useradd -u 54321 -g oinstall -G dba,asmdba,oper oracle
+# 分配角色
+usermod -g oinstall -G dba,asmdba,oper oracle
+
 
 # 修改密碼(passwd oracle)
 echo oracle7695 | passwd --stdin oracle
-
-
-# 用户最大进程数限制的配置
-# vim /etc/security/limits.d/90-nproc.conf
-# soft    nproc    1024
 
 # 目錄權限分配
 chown oracle.oinstall /db
@@ -83,15 +99,18 @@ chmod -R 755 /opt/oracle
 chown oracle.oinstall /backup
 chmod 755 /backup
 
+# 修改主機名稱
+hostname $ihostname
 # 配置HOST
-cat << 'EOF' >> /etc/hosts
-127.0.0.1               localhost.localdomain localhost
-192.168.70.22           gsas.gs.com.cn       gsas
-192.168.50.21           gsdb9.gs.com.cn      gsdb9
-EOF
+public_ip=$(hostname -I| grep -o -e '[0-9]\{1,3\}.[0-9]\{1,3\}.[0-9]\{1,3\}.[0-9]\{1,3\}' |head -n 1)
+node_name=$(hostname)
+echo -e "${public_ip} ${node_name} gsdb9">> /etc/hosts
+echo -e "192.168.70.22 gsas.gs.com.cn gsas">> /etc/hosts
 
 # 配置DNS主機
-cat << 'EOF' >> /etc/resolv.conf
+rm -rf /etc/resolv.conf.bk
+cp /etc/resolv.conf /etc/resolv.conf.bk # 備份
+cat <<EOF> /etc/resolv.conf
 search gs.com.cn
 nameserver  202.96.209.133
 nameserver  8.8.8.8
@@ -99,12 +118,14 @@ EOF
 
 
 
-# 定义用户登录时的身份验证规则和配置。
+# 定義使用者登入時的身份驗證規則和配置
 cat << 'EOF' >> /etc/pam.d/login
 session required /lib/security/pam_limits.so
 EOF
 
 # 全局用户环境变量和初始化脚本
+/bin/cp -f /etc/profile.bk /etc/profile
+/bin/cp -f /etc/profile /etc/profile.bk # 備份
 cat << 'EOF' >> /etc/profile
 ORACLE_HOSTNAME=gsdb9.gs.com.cn; export ORACLE_HOSTNAME
 ORACLE_UNQNAME=MIS; export ORACLE_UNQNAME
@@ -118,7 +139,9 @@ CLASSPATH=$ORACLE_HOME/jlib:$ORACLE_HOME/rdbms/jlib; export CLASSPATH
 EOF
 source /etc/profile
 
-# 定义用户登录时的环境变量和初始化脚本
+# 定義使用者登入時的環境變數和初始化腳本
+/bin/cp -f /etc/csh.login.bk /etc/csh.login
+/bin/cp -f /etc/csh.login /etc/csh.login.bk # 備份
 cat << 'EOF' >> /etc/csh.login
 if ( $USER == "oracle" ) then
  limit maxproc 16384
@@ -127,51 +150,40 @@ if ( $USER == "oracle" ) then
 endif
 EOF
 
+
 # 上傳檔案/home/oracle/source
-mkdir -p /home/oracle/source
-chmod 777 /home/oracle/source
+assetsdir=/home/oracle/source
+mkdir -p $assetsdir
+chmod 777 $assetsdir
+wget -r -nH --no-parent --no-directories ftp://administrator:ginkogsas@192.168.70.22/administrator/OracleDB/source -P $assetsdir
 
-
-echo '進度:50%'
-
-1.p13390677_112040_Linux-x86-64_1of7.zip
-2.p13390677_112040_Linux-x86-64_2of7.zip
-3.db.rsp
-4.dbca.rsp
-5.netca.rsp
-
-
-#############################################################################################
 ## 解壓縮
-cd /home/oracle/source
-unzip p13390677_112040_Linux-x86-64_1of7.zip
-unzip p13390677_112040_Linux-x86-64_2of7.zip
-
-# 配置VNC
-su oracle
-vncserver
-#############################################################################################
+cd $assetsdir
+unzip -q p13390677_112040_Linux-x86-64_1of7.zip
+unzip -q p13390677_112040_Linux-x86-64_2of7.zip
 
 # 開始安裝(用戶:oracle) | CORE  11.2.0.4.0  Production
+sleep 5
+echo -e "\n\n****** start db instance create ******\n\n" 
 su - oracle -c "
 export LC_ALL=\"C\";
 cd ~/source/database;
-./runInstaller -silent -waitForCompletion -noconfig -showProgress -ignorePrereq -responseFile /home/oracle/source/db.rsp
+./runInstaller -silent -waitForCompletion -noconfig -showProgress -ignorePrereq -responseFile ${assetsdir}/db.rsp
 "
 sh /opt/oraInventory/orainstRoot.sh
 sh /opt/oracle/ora11gR2/root.sh
-
 # DBCA (Global DB Name=MIS.GS.COM.CN, SID=MIS)
-su - oracle -c "dbca -silent -responseFile /home/oracle/source/dbca.rsp"
+su - oracle -c "dbca -silent -responseFile ${assetsdir}/dbca.rsp"
 # NETCA (Listener=LISTENER)
-su - oracle -c "netca -silent -responseFile /home/oracle/source/netca.rsp"
+su - oracle -c "netca -silent -responseFile ${assetsdir}/netca.rsp"
+echo -e "\n\n****** db instance create complete ******\n\n"
 
 # 設置作業系統, 自啓動
 cat << 'EOF' >> /etc/oratab
-mis:/opt/oracle/ora11gR2:Y
+MIS:/opt/oracle/ora11gR2:Y
 EOF
 
-# 控制用户登录时用户名的大小写敏感性(不区分用户名的大小写)
+# 控制使用者登入時使用者名稱的大小寫敏感度(不區分使用者名稱的大小寫)
 su - oracle -c "
 echo '
 alter system set sec_case_sensitive_logon=false scope=both;
@@ -180,8 +192,9 @@ startup' |
 sqlplus -S / as sysdba
 "
 
+
 # 設置TNSNAME
-cat << 'EOF' >> $ORACLE_HOME/network/admin/tnsnames.ora
+cat << 'EOF' > $ORACLE_HOME/network/admin/tnsnames.ora
 MIS =
   (DESCRIPTION =
     (ADDRESS = (PROTOCOL = TCP)(HOST = 192.168.50.21)(PORT = 1521))
@@ -340,6 +353,7 @@ EOF
 chmod 600 /home/oracle/.netrc
 chown oracle.oinstall /home/oracle/.netrc
 
+
 # 定義脚本(數據庫備份)
 cat << 'EOF' >> /backup/backup_gs.sh
 export NLS_LANG=american_america.UTF8
@@ -393,6 +407,7 @@ sqlplus -S / as sysdba
 "
 
 # 郵箱SMTP設置
+: <<'COMMENT'
 su - oracle -c "
 echo '
 @$ORACLE_HOME/rdbms/admin/utlmail.sql;
@@ -402,8 +417,31 @@ grant execute on utl_mail to public;
 ' | 
 sqlplus -S / as sysdba
 "
+COMMENT
+
+
+# 權限
+su - oracle -c "
+  grant all on v_$database to public;
+  grant all on v_$session to public;
+  alter profile default limit password_life_time unlimited;
+"
+
+# rar工具安裝
+cd /home/oracle/source
+tar zxvf rarlinux-x64-5.5.0.tar.gz -C /usr/local
+ln -s /usr/local/rar/rar /usr/local/bin/rar
+ln -s /usr/local/rar/unrar /usr/local/bin/unrar
+
+# NTP時間矯正
+ntpdate time.windows.com
+cat << EOF >> /etc/crontab
+10 5 * * * root (/usr/sbin/ntpdate time.windows.com && /sbin/hwclock -w) &> /dev/null
+EOF
+
 
 # 建立表空間
+: <<'COMMENT'
 su - oracle -c "
 echo '
 CREATE SMALLFILE 
@@ -455,25 +493,6 @@ CREATE SMALLFILE
 sqlplus -S / as sysdba
 "
 
-# 權限
-su - oracle -c "
-	grant all on v_$database to public;
-	grant all on v_$session to public;
-	alter profile default limit password_life_time unlimited;
-"
-
-# rar工具安裝
-cd /home/oracle/source
-tar zxvf rarlinux-x64-5.5.0.tar.gz -C /usr/local
-ln -s /usr/local/rar/rar /usr/local/bin/rar
-ln -s /usr/local/rar/unrar /usr/local/bin/unrar
-
-# NTP時間矯正
-ntpdate time.windows.com
-cat << EOF >> /etc/crontab
-10 5 * * * root (/usr/sbin/ntpdate time.windows.com && /sbin/hwclock -w) &> /dev/null
-EOF
-
 # 備份還原
 su oracle
 impdp userid="'/ as sysdba'" file=expdp_gs20240106.dmp directory=dpdata_dir full=y ignore=y log=full.log
@@ -517,11 +536,12 @@ select 'analyze table "'||owner||'"."'||object_name||'" compute statistics;'
   from all_objects
  where object_type in ('TABLE','MATERIALIZED VIEW')
    and owner in ('TBM','HRM','CSM','OAM','SDM','WEBUTIL',
-								'OLM','WSM','GLM','HYD','UFM','WIP','AGENTFLOW',
-								'MIS','IDM','CTM','BKM','IWM','BOM','SDM',
-								'ERM','APM','PRM','IWM','CSM',
-								'WFM','IVM','BPM','TDM','CMM','ARM','ERM',
-								'REPORT','SYS','SYSTEM')
+                'OLM','WSM','GLM','HYD','UFM','WIP','AGENTFLOW',
+                'MIS','IDM','CTM','BKM','IWM','BOM','SDM',
+                'ERM','APM','PRM','IWM','CSM',
+                'WFM','IVM','BPM','TDM','CMM','ARM','ERM',
+                'REPORT','SYS','SYSTEM')
   order by owner,object_name;
 spool off;
 @c:\temp\analyze_all.sql;
+COMMENT
