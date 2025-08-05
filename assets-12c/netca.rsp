@@ -28,8 +28,8 @@
 ###################################################################### 
 
 [GENERAL]
-RESPONSEFILE_VERSION="11.2"
-CREATE_TYPE="CUSTOM"
+RESPONSEFILE_VERSION="12.2"
+CREATE_TYPE="TYPICAL"
 
 #-------------------------------------------------------------------------------
 # Name       : SHOW_GUI

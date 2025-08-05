@@ -193,7 +193,7 @@ EOF
 # 配置DNS主機
 cat << 'EOF' >> /etc/resolv.conf
 search gs.com.cn
-nameserver  202.96.209.133
+nameserver  114.114.114.114
 nameserver  8.8.8.8
 EOF
 

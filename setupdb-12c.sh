@@ -33,33 +33,35 @@ cat <<EOF>> /etc/fstab
 EOF
 
 # 關閉防火墻
-service iptables save
-service iptables stop
-chkconfig iptables off
+systemctl stop firewalld
+systemctl disable firewalld
+systemctl mask firewalld
 
 # 關閉SELINUX
 sed -i "s/SELINUX=enforcing/SELINUX=disabled/" /etc/selinux/config
-setenforce 0
+setenforce 0 # 即時生效
+
 
 : <<'COMMENT'
 # 配置本地yum 源(記得重新連接CD/DVD)
 mount /dev/cdrom /mnt
-mkdir -p /source/oracleLinux6
-cp -rf /mnt/* /source/oracleLinux6/
+mkdir -p /source/oracleLinux7
+cp -rf /mnt/* /source/oracleLinux7/
 cd /etc/yum.repos.d
 mkdir bak
 mv public* bak
 cat << 'EOF' >>local.repo
 [OLINUX]
-name=Oracle Linux 6 x86_64
-baseurl=file:///source/oracleLinux6/Server
+name=Oracle Linux 7 x86_64
+baseurl=file:///source/oracleLinux7/Server
 enabled=1
 gpgcheck=0
 EOF
 COMMENT
 
 # 下載遠程yum源 (local.repo包不存oracle-rdbms-server-11gR2-preinstall)
-sudo wget http://public-yum.oracle.com/public-yum-ol6.repo
+cd /etc/yum.repos.d
+sudo wget http://public-yum.oracle.com/public-yum-ol7.repo
 # 檢查源
 # yum repolist all
 # 清除原有的yum信息
@@ -67,7 +69,9 @@ yum clean all
 
 # Oracle预安装包，它会自动安装 Oracle 数据库 11gR2 所需要的依赖库、配置环境、系统调整(如内核参数、用户和组等)
 # ****  若使用此包可跳至153行[修改密碼], 並繼續以下操作
-yum install oracle-rdbms-server-11gR2-preinstall -y
+https://yum.oracle.com/repo/OracleLinux/OL7/addons/x86_64/index.html
+yum install oracle-rdbms-server-12cR1-preinstall -y
+
 
 
 # 新增用戶組
@@ -130,7 +134,7 @@ cat << 'EOF' >> /etc/profile
 ORACLE_HOSTNAME=gsdb9.gs.com.cn; export ORACLE_HOSTNAME
 ORACLE_UNQNAME=MIS; export ORACLE_UNQNAME
 ORACLE_BASE=/opt/oracle; export ORACLE_BASE
-ORACLE_HOME=$ORACLE_BASE/ora11gR2; export ORACLE_HOME
+ORACLE_HOME=$ORACLE_BASE/ora12cR2; export ORACLE_HOME
 ORACLE_SID=MIS; export ORACLE_SID
 PATH=/usr/sbin:$PATH; export PATH
 PATH=$ORACLE_HOME/bin:$PATH; export PATH
@@ -155,12 +159,12 @@ EOF
 assetsdir=/home/oracle/source
 mkdir -p $assetsdir
 chmod 777 $assetsdir
-wget -r -nH --no-parent --no-directories ftp://administrator:ginkogsas@192.168.70.22/administrator/OracleDB/assets -P $assetsdir
+wget -r -nH --no-parent --no-directories ftp://administrator:ginkogsas@192.168.70.22/administrator/OracleDB/assets-12c -P $assetsdir
+chmod -R 777 $assetsdir
 
 ## 解壓縮
 cd $assetsdir
-unzip -q p13390677_112040_Linux-x86-64_1of7.zip
-unzip -q p13390677_112040_Linux-x86-64_2of7.zip
+unzip -q linuxx64_12201_database.zip
 
 # 開始安裝(用戶:oracle) | CORE  11.2.0.4.0  Production
 sleep 5
@@ -171,16 +175,16 @@ cd ${assetsdir}/database;
 ./runInstaller -silent -waitForCompletion -noconfig -showProgress -ignorePrereq -responseFile ${assetsdir}/db_install.rsp
 "
 sh /opt/oraInventory/orainstRoot.sh
-sh /opt/oracle/ora11gR2/root.sh
+sh /opt/oracle/ora12cR2/root.sh
 # NETCA (Listener=LISTENER)
 su - oracle -c "netca -silent -responseFile ${assetsdir}/netca.rsp"
 # DBCA (Global DB Name=MIS.GS.COM.CN, SID=MIS)
-su - oracle -c "dbca -silent -responseFile ${assetsdir}/dbca.rsp"
+su - oracle -c "dbca -silent -createDatabase -responseFile ${assetsdir}/dbca.rsp"
 echo -e "\n\n****** db instance create complete ******\n\n"
 
 # 設置作業系統, 自啓動
 cat << 'EOF' >> /etc/oratab
-MIS:/opt/oracle/ora11gR2:Y
+MIS:/opt/oracle/ora12cR2:Y
 EOF
 
 # 控制使用者登入時使用者名稱的大小寫敏感度(不區分使用者名稱的大小寫)
@@ -286,7 +290,7 @@ EOF
 cat << 'EOF' >> /etc/init.d/dbora
 #!/bin/bash
 export ORACLE_BASE=/opt/oracle
-export ORACLE_HOME=/opt/oracle/ora11gR2
+export ORACLE_HOME=/opt/oracle/ora12cR2
 export ORACLE_SID=MIS
 export NLS_LANG=american_america.UTF8
 export PATH=/bin:/usr/bin:$ORACLE_HOME/bin:$PATH
@@ -357,8 +361,8 @@ chown oracle.oinstall /home/oracle/.netrc
 # 定義脚本(數據庫備份)
 cat << 'EOF' >> /backup/backup_gs.sh
 export NLS_LANG=american_america.UTF8
-export ORACLE_HOME=/opt/oracle/ora11gR2
-#export ORACLE_HOME=/opt/oracle/Ora11gR2Client
+export ORACLE_HOME=/opt/oracle/ora12cR2
+#export ORACLE_HOME=/opt/oracle/ora12cR2Client
 export PATH=$ORACLE_HOME/bin:$PATH
 export ORACLE_SID=MIS
 export FILE_NAME=expdp_gs`date +%Y%m%d`
