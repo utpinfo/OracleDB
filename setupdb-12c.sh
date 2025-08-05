@@ -207,6 +207,9 @@ MIS =
       (SID = pdb1.gs.com.cn)
     )
   )
+LISTENER_MIS =
+  (ADDRESS = (PROTOCOL = TCP)(HOST = gsdb9.gs.com.cn)(PORT = 1521))
+  
 
 GSDB3 =
   (DESCRIPTION =
