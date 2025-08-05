@@ -183,9 +183,10 @@ su - oracle -c "dbca -silent -createDatabase -responseFile ${assetsdir}/dbca.rsp
 echo -e "\n\n****** db instance create complete ******\n\n"
 
 # 設置作業系統, 自啓動
-cat << 'EOF' >> /etc/oratab
-MIS:/opt/oracle/ora12cR2:Y
-EOF
+sed -i '/^MIS:/s/:N$/:Y/' /etc/oratab
+#cat << 'EOF' >> /etc/oratab
+#MIS:/opt/oracle/ora12cR2:Y
+#EOF
 
 # 控制使用者登入時使用者名稱的大小寫敏感度(不區分使用者名稱的大小寫)
 su - oracle -c "
@@ -201,9 +202,9 @@ sqlplus -S / as sysdba
 cat << 'EOF' > $ORACLE_HOME/network/admin/tnsnames.ora
 MIS =
   (DESCRIPTION =
-    (ADDRESS = (PROTOCOL = TCP)(HOST = 192.168.50.21)(PORT = 1521))
+    (ADDRESS = (PROTOCOL = TCP)(HOST = 192.168.70.121)(PORT = 1521))
     (CONNECT_DATA =
-      (SID = MIS)
+      (SID = pdb1.gs.com.cn)
     )
   )
 
@@ -299,15 +300,11 @@ export LD_LIBRARY_PATH=/lib:/usr/lib:/usr/lib64:$ORACLE_HOME/lib
 
 start() {
         su  oracle -c "lsnrctl start"
-        su  oracle -c "emctl start dbconsole"
-        su  oracle -c "isqlplusctl start"
         su  oracle -c "dbstart $ORACLE_HOME"
 }
 
 stop() {
         su  oracle -c "lsnrctl stop"
-        su  oracle -c "emctl stop dbconsole"
-        su  oracle -c "isqlplusctl stop"
         su  oracle -c "dbshut $ORACLE_HOME"
 }
 
