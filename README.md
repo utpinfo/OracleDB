@@ -17,7 +17,7 @@ wget https://yum.oracle.com/ISOS/OracleLinux/OL6/u10/x86_64/OracleLinux-R6-U10-S
 # For Oracle Linux 6
 ks=http://192.168.201.27/ksfiles/ks.cfg ip=192.168.70.121::192.168.70.254:255.255.255.0::eth0:none
 # For Oracle Linux 7
-# ks=http://192.168.201.27/ksfiles/ks.cfg ip=192.168.70.121::192.168.70.254:255.255.255.0::ens192:none
+# ks=http://192.168.201.27/ksfiles/ol7ks.cfg ip=192.168.70.121::192.168.70.254:255.255.255.0::ens192:none
 # For Oracle Linux 6 (internat)
 # ks=https://raw.githubusercontent.com/utpinfo/OracleDB/main/ksfiles/ks.cfg ip=192.168.70.121::192.168.70.254:255.255.255.0::eth0:none nameserver=114.114.114.114,8.8.8.8
 # For Oracle Linux 7
