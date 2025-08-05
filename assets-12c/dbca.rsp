@@ -39,7 +39,7 @@ gdbName=mis.gs.com.cn
 # Default value : <db_name> specified in GDBNAME
 # Mandatory     : No
 #-----------------------------------------------------------------------------
-sid=mis
+sid=MIS
 
 #-----------------------------------------------------------------------------
 # Name          : databaseConfigType
@@ -408,7 +408,7 @@ datafileJarLocation=
 # Default value : $ORACLE_BASE/oradata
 # Mandatory     : No
 #-----------------------------------------------------------------------------
-datafileDestination=/opt/oracle/oradata
+#datafileDestination=/opt/oracle/oradata
 
 #-----------------------------------------------------------------------------
 # Name          : recoveryAreaDestination
@@ -418,7 +418,7 @@ datafileDestination=/opt/oracle/oradata
 # Default value : $ORACLE_BASE/flash_recovery_area
 # Mandatory     : No
 #-----------------------------------------------------------------------------
-recoveryAreaDestination=/opt/oracle/flash_recovery_area
+#recoveryAreaDestination=/opt/oracle/flash_recovery_area
 
 #-----------------------------------------------------------------------------
 # Name          : storageType
@@ -534,7 +534,7 @@ listeners=LISTENER
 # Default value : None
 # Mandatory     : NO
 #-----------------------------------------------------------------------------
-variablesFile=
+#variablesFile=
 
 #-----------------------------------------------------------------------------
 # Name          : variables
@@ -543,7 +543,7 @@ variablesFile=
 # Default value : None
 # Mandatory     : NO
 #-----------------------------------------------------------------------------
-variables=DB_UNIQUE_NAME=cdbrac,ORACLE_BASE=/u01/app/oracle,PDB_NAME=,DB_NAME=cdbrac,ORACLE_HOME=/u01/app/oracle/product/12.2.0.1/db_1,SID=cdbrac
+#variables=DB_UNIQUE_NAME=cdbrac,ORACLE_BASE=/u01/app/oracle,PDB_NAME=,DB_NAME=cdbrac,ORACLE_HOME=/u01/app/oracle/product/12.2.0.1/db_1,SID=cdbrac
 
 #-----------------------------------------------------------------------------
 # Name          : initParams
@@ -552,7 +552,7 @@ variables=DB_UNIQUE_NAME=cdbrac,ORACLE_BASE=/u01/app/oracle,PDB_NAME=,DB_NAME=cd
 # Default value : None
 # Mandatory     : NO
 #-----------------------------------------------------------------------------
-initParams=family:dw_helper.instance_mode=read-only,processes=300,db_recovery_file_dest_size=11G,pga_aggregate_target=369MB,sga_target=1107MB,dispatchers=(PROTOCOL=TCP) (SERVICE={SID}XDB),db_recovery_file_dest=+DATA,db_block_size=8KB,cdbrac2.thread=2,cdbrac1.thread=1,diagnostic_dest={ORACLE_BASE},cluster_database=false,audit_file_dest={ORACLE_BASE}/admin/{DB_UNIQUE_NAME}/adump,db_create_file_dest=+DATA/{DB_UNIQUE_NAME}/,local_listener=-oraagent-dummy-,cdbrac1.undo_tablespace=UNDOTBS1,compatible=12.2.0,cdbrac1.instance_number=1,db_name=cdbrac,audit_trail=db,remote_login_passwordfile=exclusive,open_cursors=300,cdbrac2.undo_tablespace=UNDOTBS2,cdbrac2.instance_number=2
+#initParams=family:dw_helper.instance_mode=read-only,processes=300,db_recovery_file_dest_size=11G,pga_aggregate_target=369MB,sga_target=1107MB,dispatchers=(PROTOCOL=TCP) (SERVICE={SID}XDB),db_recovery_file_dest=+DATA,db_block_size=8KB,cdbrac2.thread=2,cdbrac1.thread=1,diagnostic_dest={ORACLE_BASE},cluster_database=false,audit_file_dest={ORACLE_BASE}/admin/{DB_UNIQUE_NAME}/adump,db_create_file_dest=+DATA/{DB_UNIQUE_NAME}/,local_listener=-oraagent-dummy-,cdbrac1.undo_tablespace=UNDOTBS1,compatible=12.2.0,cdbrac1.instance_number=1,db_name=cdbrac,audit_trail=db,remote_login_passwordfile=exclusive,open_cursors=300,cdbrac2.undo_tablespace=UNDOTBS2,cdbrac2.instance_number=2
 
 #-----------------------------------------------------------------------------
 # Name          : sampleSchema
