@@ -240,7 +240,7 @@ sysPassword=ginkogsdb
 # Default value : None
 # Mandatory     : Yes
 #-----------------------------------------------------------------------------
-systemPassword= ginkogsdb
+systemPassword=ginkogsdb
 
 #-----------------------------------------------------------------------------
 # Name          : serviceUserPassword

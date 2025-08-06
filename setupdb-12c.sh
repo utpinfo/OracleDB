@@ -12,8 +12,9 @@
 #              - $ORACLE_HOME/dbs
 #
 # Startup Test: Run the following commands to verify:
-#              - dbstart $ORACLE_HOME
 #              - /etc/init.d/dbora start
+#              - dbstart $ORACLE_HOME
+# show parameter local_listener;
 # ============================================================================
 
 # 指定hostname
@@ -188,10 +189,12 @@ sed -i '/^MIS:/s/:N$/:Y/' /etc/oratab
 #MIS:/opt/oracle/ora12cR2:Y
 #EOF
 
-# 控制使用者登入時使用者名稱的大小寫敏感度(不區分使用者名稱的大小寫)
+# 控制使用者登入時使用者名稱的大小寫敏感度(不區分使用者名稱的大小寫)/PDB自動啟動
 su - oracle -c "
 echo '
 alter system set sec_case_sensitive_logon=false scope=both;
+alter system reset local_listener scope=both;
+alter pluggable database pdb1 save state;
 shutdown immediate
 startup' | 
 sqlplus -S / as sysdba
@@ -204,12 +207,19 @@ MIS =
   (DESCRIPTION =
     (ADDRESS = (PROTOCOL = TCP)(HOST = 192.168.70.121)(PORT = 1521))
     (CONNECT_DATA =
-      (SID = pdb1.gs.com.cn)
+      (SERVER = DEDICATED)
+      (SERVICE_NAME = mis.gs.com.cn)
     )
   )
-LISTENER_MIS =
-  (ADDRESS = (PROTOCOL = TCP)(HOST = gsdb9.gs.com.cn)(PORT = 1521))
-  
+
+MISPDB =
+  (DESCRIPTION =
+    (ADDRESS = (PROTOCOL = TCP)(HOST = 192.168.70.121)(PORT = 1521))
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SERVICE_NAME = pdb1.gs.com.cn)
+    )
+  )
 
 GSDB3 =
   (DESCRIPTION =
@@ -291,7 +301,7 @@ EXTPROC_CONNECTION_DATA =
 EOF
 
 # 定義脚本(启动、停止、管理数据库的操作)
-cat << 'EOF' >> /etc/init.d/dbora
+cat << 'EOF' > /etc/init.d/dbora
 #!/bin/bash
 export ORACLE_BASE=/opt/oracle
 export ORACLE_HOME=/opt/oracle/ora12cR2
@@ -304,9 +314,17 @@ export LD_LIBRARY_PATH=/lib:/usr/lib:/usr/lib64:$ORACLE_HOME/lib
 start() {
         su  oracle -c "lsnrctl start"
         su  oracle -c "dbstart $ORACLE_HOME"
+        su oracle -c "sqlplus / as sysdba <<EOF
+                alter pluggable database all open;
+                exit;
+            EOF"
 }
 
 stop() {
+        su oracle -c "sqlplus / as sysdba <<EOF
+                alter pluggable database all close immediate;
+                exit;
+            EOF"
         su  oracle -c "lsnrctl stop"
         su  oracle -c "dbshut $ORACLE_HOME"
 }
