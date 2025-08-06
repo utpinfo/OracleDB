@@ -456,7 +456,16 @@ CREATE SMALLFILE
              '\''/db/oracle/MIS/MIS_DATA_07.dbf'\'' SIZE 16G,
              '\''/db/oracle/MIS/MIS_DATA_08.dbf'\'' SIZE 16G,
              '\''/db/oracle/MIS/MIS_DATA_09.dbf'\'' SIZE 16G,
-             '\''/db/oracle/MIS/MIS_DATA_10.dbf'\'' SIZE 16G
+             '\''/db/oracle/MIS/MIS_DATA_10.dbf'\'' SIZE 16G,
+             '\''/db/oracle/MIS/MIS_DATA_11.dbf'\'' SIZE 16G,             
+             '\''/db/oracle/MIS/MIS_DATA_12.dbf'\'' SIZE 16G,
+             '\''/db/oracle/MIS/MIS_DATA_13.dbf'\'' SIZE 16G,
+             '\''/db/oracle/MIS/MIS_DATA_14.dbf'\'' SIZE 16G,
+             '\''/db/oracle/MIS/MIS_DATA_15.dbf'\'' SIZE 16G,
+             '\''/db/oracle/MIS/MIS_DATA_16.dbf'\'' SIZE 16G,
+             '\''/db/oracle/MIS/MIS_DATA_17.dbf'\'' SIZE 16G,
+             '\''/db/oracle/MIS/MIS_DATA_18.dbf'\'' SIZE 16G,
+             '\''/db/oracle/MIS/MIS_DATA_19.dbf'\'' SIZE 16G            
     EXTENT MANAGEMENT LOCAL SEGMENT SPACE MANAGEMENT  AUTO;
 
 CREATE SMALLFILE 
