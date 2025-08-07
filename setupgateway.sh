@@ -22,8 +22,8 @@ cd ${assetsdir}/gateways;
 ./runInstaller -silent -ignorePrereqFailure -ignoreSysPrereqs -showProgress -waitforcompletion -responseFile ${assetsdir}/tg.rsp
 "
 
-
-# 配置網關文件
+# 文件配置
+-配置網關文件
 cd $ORACLE_BASE/ora12cR2/dg4msql/admin
 mv initdg4msql.ora initdg4msql.ora.bk
 
@@ -45,7 +45,7 @@ sed -i 's/betg/hns/' inithns.ora
 cp initdg4msql.ora.bk initoptics.ora
 sed -i 's/betg/optics/' initoptics.ora
 
-# 配置客戶端 tnsname
+-配置客戶端 tnsname
 cat <<EOF>> $ORACLE_HOME/network/admin/tnsnames.ora
 hks  =
   (DESCRIPTION=
@@ -90,7 +90,7 @@ optics  =
   )  
 EOF
 
-# 配置服務端 listener.ora
+-配置服務端 listener.ora
 cat <<EOF>> $ORACLE_HOME/network/admin/listener.ora
 SID_LIST_LISTENER =
   (SID_LIST =
@@ -127,10 +127,10 @@ SID_LIST_LISTENER =
   )
 EOF
 
-# 數據庫重啟
+-數據庫重啟
 /etc/init.d/dbora start
 
-# 建立DATABASE Link
+-建立DATABASE Link
 su oracle
 sqlplus -s / as sysdba <<EOF
 
