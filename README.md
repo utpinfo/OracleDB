@@ -29,3 +29,9 @@ ks=http://192.168.201.27/ksfiles/ks.cfg ip=192.168.70.121::192.168.70.254:255.25
 cd /tmp
 wget https://raw.githubusercontent.com/utpinfo/OracleDB/main/setupdb.sh && chmod +x setupdb.sh && ./setupdb.sh
 ```
+
+4. 網關配置 (訪問SQL Server)
+```
+cd /tmp
+wget https://raw.githubusercontent.com/utpinfo/OracleDB/main/setupgateway.sh && chmod +x setupgateway.sh && ./setupgateway.sh
+```

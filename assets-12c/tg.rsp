@@ -92,7 +92,7 @@ oracle.install.tg.ifmxConStr=
 #Example    : oracle.install.tg.msqlConStr={svr1,1234,msvr,mdb}
 #Component  : oracle.rdbms.tg4msql
 #------------------------------------------------------------------------------
-oracle.install.tg.msqlConStr=192.168.201.147,1433,FRDB,betg
+oracle.install.tg.msqlConStr=192.168.201.147,1433,MSSQLSERVER,betg
 
 #------------------------------------------------------------------------------
 #Name       : oracle.install.tg.sybsConStr
