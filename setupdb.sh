@@ -41,8 +41,8 @@ chkconfig iptables off
 sed -i "s/SELINUX=enforcing/SELINUX=disabled/" /etc/selinux/config
 setenforce 0
 
-: <<'COMMENT'
 # 配置本地yum 源(記得重新連接CD/DVD)
+: <<'COMMENT'
 mount /dev/cdrom /mnt
 mkdir -p /source/oracleLinux6
 cp -rf /mnt/* /source/oracleLinux6/
@@ -116,8 +116,6 @@ nameserver  114.114.114.114
 nameserver  8.8.8.8
 EOF
 
-
-
 # 定義使用者登入時的身份驗證規則和配置
 cat << 'EOF' >> /etc/pam.d/login
 session required /lib/security/pam_limits.so
@@ -164,7 +162,7 @@ unzip -q p13390677_112040_Linux-x86-64_2of7.zip
 
 # 開始安裝(用戶:oracle) | CORE  11.2.0.4.0  Production
 sleep 5
-echo -e "\n\n****** start db instance create ******\n\n" 
+echo -e "\n\n****** Begin Setup Oracle Database ******\n\n" 
 su - oracle -c "
 export LC_ALL=\"C\";
 cd ${assetsdir}/database;
@@ -176,7 +174,8 @@ sh /opt/oracle/ora11gR2/root.sh
 su - oracle -c "netca -silent -responseFile ${assetsdir}/netca.rsp"
 # DBCA (Global DB Name=MIS.GS.COM.CN, SID=MIS)
 su - oracle -c "dbca -silent -responseFile ${assetsdir}/dbca.rsp"
-echo -e "\n\n****** db instance create complete ******\n\n"
+
+echo -e "\n\n****** End Setup Oracle Database  ******\n\n"
 
 # 設置作業系統, 自啓動
 cat << 'EOF' >> /etc/oratab
@@ -440,8 +439,8 @@ cat << EOF >> /etc/crontab
 EOF
 
 
+################################################################################################
 # 建立表空間
-: <<'COMMENT'
 su - oracle -c "
 echo '
 CREATE SMALLFILE 
@@ -502,11 +501,18 @@ CREATE SMALLFILE
 sqlplus -S / as sysdba
 "
 
+# 獲取備份數據
+cd /backup
+wget -r -nH --no-parent --no-directories \
+"ftp://administrator:ginkogsas@192.168.70.22/backup/expdp_gs20250807.part"{01,02}.rar
+unrar x expdp_gs20250807.part01.rar && chmod 777 expdp_gs20250807.dmp
+
 # 備份還原
 su oracle
-impdp userid="'/ as sysdba'" file=expdp_gs20240106.dmp directory=dpdata_dir full=y ignore=y log=full.log
+impdp userid="'/ as sysdba'" file=expdp_gs20250807.dmp directory=dpdata_dir full=y ignore=y log=full.log
 exit;
 
+: <<'COMMENT'
 # 編譯無效物件
 --check invalid object
 col owner for a10;

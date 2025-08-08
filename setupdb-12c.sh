@@ -517,7 +517,7 @@ sqlplus -S / as sysdba
 
 # 備份還原
 su oracle
-impdp userid="'/ as sysdba'" file=expdp_gs20240106.dmp directory=dpdata_dir full=y ignore=y log=full.log
+impdp userid="'/ as sysdba'" file=expdp_gs20240106.dmp directory=dpdata_dir full=y ignore=y log=full.log parallel=4
 exit;
 
 # 編譯無效物件
