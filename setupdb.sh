@@ -509,7 +509,7 @@ unrar x expdp_gs20250807.part01.rar && chmod 777 expdp_gs20250807.dmp
 
 # 備份還原
 su oracle
-impdp userid="'/ as sysdba'" file=expdp_gs20250807.dmp directory=dpdata_dir full=y ignore=y log=full.log
+impdp userid="'/ as sysdba'" file=expdp_gs20250807.dmp directory=dpdata_dir full=y ignore=y log=full.log job_name=initial status=60 
 exit;
 
 : <<'COMMENT'
