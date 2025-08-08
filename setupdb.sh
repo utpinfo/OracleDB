@@ -501,6 +501,14 @@ CREATE SMALLFILE
 sqlplus -S / as sysdba
 "
 
+# 其他授權
+su - oracle -c "
+echo '
+grant execute on dbms_crypto to public with grant option;
+grant execute on dbms_lock to public with grant option;' | 
+sqlplus -S / as sysdba
+"
+
 # 獲取備份數據
 cd /backup
 wget -r -nH --no-parent --no-directories \
